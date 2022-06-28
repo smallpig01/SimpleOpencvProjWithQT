@@ -5,3 +5,5 @@ CONFIG -= qt
 
 SOURCES += \
         main.cpp
+
+include(../src/opencv320/OpenCV320.pri)
