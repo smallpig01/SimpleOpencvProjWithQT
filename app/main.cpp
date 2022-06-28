@@ -7,24 +7,20 @@ using namespace cv;
 
 int main()
 {
-    // webcam setting
-    const int deviceID = 2;
-    const int apiID    = cv::CAP_ANY;
-    VideoCapture cap;
-    cap.open(deviceID, apiID);
-    if (!cap.isOpened())
-    {
-        std::cout << "ERROR! Unable to open camera\n";
-        exit(-1);
-    }
+    // open camera
+    int cam_index = 0;
+    VideoCapture cap = VideoCapture(cam_index);
 
     // capture webcap
-    Mat MyMatColor;
+    Mat img;
     while(1)
     {
-        cap.read(MyMatColor);
-        cv::imshow( "MyMatColor", MyMatColor );
-        cv::waitKey(30);
+        cap.read(img);
+        cv::imshow( "img", img );
+
+        // escape
+        if( cv::waitKey(30) == 27 ) //'escape key'
+            return 0; 
     }
 
     return 0;
