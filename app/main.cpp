@@ -1,11 +1,23 @@
 #include <iostream>
 
 #include "opencv2/opencv.hpp"
+#include "MyPointFrame.h"
 
 using namespace std;
 using namespace cv;
 
 int OpenDevice(VideoCapture& cap, int& cam_index, int& res_w, int& res_h);
+
+// mouse event dunction
+void MyMouseEvent(int event, int x, int y, int flags, void* userdata);
+int HitFrame(int HitX, int HitY);
+int DragFrame(int HitX, int HitY);
+int ReleaseFrame();
+int DrawFrame(Mat& DstMat);
+
+// MyPointFrame setting
+int gNumPointFrame = 5;
+MyPointFrame* gpPointFrame;
 
 int main()
 {
@@ -15,18 +27,29 @@ int main()
     int res_w=1280, res_h=800;
     OpenDevice(cap, cam_index, res_w, res_h);
 
+    // create window and set window momuse event
+    string window_name = "webcam";
+    namedWindow(window_name);
+    setMouseCallback(window_name, MyMouseEvent);
+
+    // create PointFrame
+    gpPointFrame = new MyPointFrame[gNumPointFrame];
 
     // capture webcap
     Mat img;
     while(1)
     {
         cap.read(img);
-        cv::imshow( "img", img );
+        DrawFrame(img); //draw MyPointFrame
+        cv::imshow(window_name, img);
+
 
         // escape
         if( cv::waitKey(30) == 27 ) //'escape key'
-            return 0;
+            break;
     }
+
+    delete [] gpPointFrame;
 
     return 0;
 }
@@ -121,4 +144,50 @@ int OpenDevice(VideoCapture& cap, int& cam_index, int& res_w, int& res_h)
 //    ret = cap.get(CAP_PROP_AUTOFOCUS);            cout << "CAP_PROP_AUTOFOCUS            = " << ret << endl;
 
     return 0;
+}
+
+void MyMouseEvent(int event, int x, int y, int flags, void* userdata)
+{
+    if (event == EVENT_LBUTTONDOWN)
+    {   //when left button clicked
+        //cout << "Left click has been made, Position:(" << x << "," << y << ")" << endl;
+        HitFrame(x,y);
+    } else if (event == EVENT_LBUTTONUP)
+    {   //when left button up
+        //cout << "Left button up has been made, Position:(" << x << "," << y << ")" << endl;
+        ReleaseFrame();
+    } else if (event == EVENT_MOUSEMOVE)
+    { //when mouse pointer moves
+        //cout << "Current mouse position:(" << x << "," << y << ")" << endl;
+        DragFrame(x, y);
+    }
+}
+
+int HitFrame(int HitX, int HitY)
+{
+    for(int i=0;i<gNumPointFrame;++i)
+        if(gpPointFrame[i].HitTest(HitX, HitY) == MyPointFrame::HITTED)
+            return 1;
+    return 0;
+}
+
+int DragFrame(int HitX, int HitY)
+{
+    for(int i=0;i<gNumPointFrame;++i)
+        gpPointFrame[i].DragFrame(HitX, HitY);
+    return 1;
+}
+
+int ReleaseFrame()
+{
+    for(int i=0;i<gNumPointFrame;++i)
+        gpPointFrame[i].ReleaseHitStatus();
+    return 1;
+}
+
+int DrawFrame(Mat& DstMat)
+{
+    for(int i=0;i<gNumPointFrame;++i)
+        gpPointFrame[i].DrawFrame(DstMat);
+    return 1;
 }
