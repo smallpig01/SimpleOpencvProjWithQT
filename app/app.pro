@@ -7,3 +7,4 @@ SOURCES += \
         main.cpp
 
 include(../src/opencv320/OpenCV320.pri)
+include(../src/MyPoint/MyPoint.pri)
